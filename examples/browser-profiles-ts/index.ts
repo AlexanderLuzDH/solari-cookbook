@@ -39,6 +39,6 @@ try {
   console.log(`saved profile v${version} (${sizeBytes} bytes)`)
 } finally {
   await browser.close()
-  // Required, or the process never exits — see browser-quickstart-ts.
+  // Optional as of 0.1.3, and no longer needed to exit — see browser-quickstart-ts.
   await solari.close()
 }
