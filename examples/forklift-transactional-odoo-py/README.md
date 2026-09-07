@@ -1,5 +1,50 @@
 # Forklift: transactional computer use for Odoo
 
+> **An agent's “done” is a proposal, not a commit.** Forklift performs visible
+> Odoo work on disposable state, freezes the result, and promotes only the exact
+> snapshot whose database passes a separate read-only audit.
+
+## Review in 60 seconds
+
+```mermaid
+flowchart LR
+    C[Clean snapshot] --> W[Disposable Odoo branch]
+    A[Visible GUI agent] --> W
+    W --> S[Immutable candidate]
+    S --> D[Read-only database audit]
+    D -->|All checks and bindings pass| P[Promote exact snapshot]
+    D -->|Wrong, missing, or uncertain| R[Reject]
+```
+
+The archived sealed campaign exercised six hidden positions and preserved every
+attempt:
+
+| Trial | Forklift decision | Database proof |
+|---|---|---|
+| Clean zero, partial, and full receipt flows | accepted | every applicable purchase, receipt, bill, tax, payable, and payment invariant passed |
+| One-cent wrong unit price | rejected | `po-unit_price` failed |
+| Worker killed after receipt | rejected | downstream `bill-count` failed |
+| Duplicate payment submission | accepted | exactly one valid reconciled payment existed |
+
+**Result: 6/6 positions, 0 invalid states accepted.** This result belongs to
+the exact historical oracle-v1 source archived with the evidence—not to the
+newer oracle-v2 working tree. See the [result matrix](docs/final-results.md), or
+verify the packet offline:
+
+```bash
+python -m scripts.verify_final_evidence
+```
+
+For a focused code review, follow the acceptance boundary in this order:
+
+1. [`gui_worker.py`](forklift/gui_worker.py) — performs the untrusted visible work;
+2. [`orchestrator.py`](forklift/orchestrator.py) — creates, freezes, and audits candidates;
+3. [`odoo_sql.py`](forklift/odoo_sql.py) and [`oracle.py`](forklift/oracle.py) — prove business state through a read-only database role;
+4. [`promotion.py`](forklift/promotion.py) — binds approval to the exact audited snapshot; and
+5. [`verify_final_evidence.py`](scripts/verify_final_evidence.py) — verifies the historical sealed packet and its retry rules.
+
+## What Forklift demonstrates
+
 Forklift adds a transaction-like acceptance boundary to stateful GUI
 automation. A visible browser worker performs a real purchase-to-pay workflow
 in Odoo on a disposable state branch. Forklift then freezes that branch, audits
@@ -7,24 +52,17 @@ the exact frozen state from a fresh sandbox, and promotes it only when every
 business invariant passes. Failed or uncertain work never replaces the clean
 canonical state.
 
-The example demonstrates four reusable ideas:
-
-- isolate GUI work from the canonical state;
-- treat the worker's completion signal as untrusted;
-- validate business semantics from an immutable snapshot; and
-- bind promotion to the exact snapshot that was audited.
-
-The Odoo scenario checks a purchase order, stock receipt, vendor bill, tax,
-payable balance, and payment as one logical outcome. It intentionally includes
-partial receipts, duplicate actions, wrong values, timeouts, and worker crashes.
+The reusable pattern is: isolate GUI work, distrust its completion signal,
+validate business semantics from immutable state, and bind promotion to the
+exact snapshot that was audited. The scenario deliberately includes partial
+receipts, duplicate actions, wrong values, timeouts, and worker crashes.
 
 > [!IMPORTANT]
-> **Validation status:** the working implementation is a post-campaign,
+> **Evidence scope:** the working implementation is a post-campaign,
 > security-hardened oracle-v2 reference candidate. Its unit tests and offline
 > integrity checks pass, but it has not been run through a new sealed Solari
-> campaign. The committed `artifacts/sealed/final-v2/` packet is historical
-> oracle-v1 evidence and validates only the archived source bytes it contains;
-> it does not certify the current oracle-v2 runtime. Run and seal a fresh
+> campaign. The committed `artifacts/sealed/final-v2/` packet validates only
+> the archived oracle-v1 source bytes it contains. Run and seal a fresh
 > campaign before making a production assurance claim about the current code.
 
 > [!IMPORTANT]
