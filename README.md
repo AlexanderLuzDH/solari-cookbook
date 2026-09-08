@@ -18,7 +18,6 @@ past. Copy one into your project and change the parts you care about.
 | [browser-stealth-proxy-ts](examples/browser-stealth-proxy-ts) | TypeScript | Stealth mode + residential proxy egress |
 | [browser-profiles-ts](examples/browser-profiles-ts) | TypeScript | Log in once, reuse the session forever |
 | [browser-session-recording-py](examples/browser-session-recording-py) | Python | Record a session, download the replay |
-| [form-delivery-check-ts](examples/form-delivery-check-ts) | TypeScript | Submit a form, then verify the lead arrived (browser + sandbox) |
 
 ### Sandbox
 
@@ -28,6 +27,15 @@ past. Copy one into your project and change the parts you care about.
 | [sandbox-quickstart-rb](examples/sandbox-quickstart-rb) | Ruby | Same, with no SDK and no gems — stdlib only |
 | [sandbox-code-interpreter-py](examples/sandbox-code-interpreter-py) | Python | Stateful Python kernel for agent loops |
 | [sandbox-port-preview-ts](examples/sandbox-port-preview-ts) | TypeScript | Expose a server in the VM on a public URL |
+
+### Multi-product
+
+One key spans all three, so an example can use more than one at once.
+
+| Example | Language | What it shows |
+| --- | --- | --- |
+| [form-delivery-check-ts](examples/form-delivery-check-ts) | TypeScript | Submit a form in a browser, verify the lead landed in a sandbox |
+| [security-posture-review-ts](examples/security-posture-review-ts) | TypeScript | Browser and sandbox running concurrently on one key |
 
 ### Desktop
 
