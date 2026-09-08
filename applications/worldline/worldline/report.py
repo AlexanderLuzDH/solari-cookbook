@@ -8,6 +8,8 @@ from pathlib import Path
 
 from .models import RunResult
 
+STATIC_ASSETS = ("index.html", "app.js", "styles.css")
+
 
 def write_report(run: RunResult, artifact_dir: Path) -> Path:
     artifact_dir.mkdir(parents=True, exist_ok=True)
@@ -16,7 +18,7 @@ def write_report(run: RunResult, artifact_dir: Path) -> Path:
         encoding="utf-8",
     )
     static_dir = files("worldline").joinpath("static")
-    for name in ("index.html", "app.js", "styles.css"):
+    for name in STATIC_ASSETS:
         with static_dir.joinpath(name).open("rb") as source:
             (artifact_dir / name).write_bytes(source.read())
     return artifact_dir / "index.html"

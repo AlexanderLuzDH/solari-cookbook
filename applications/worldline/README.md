@@ -10,9 +10,10 @@ from the checkpoint.
 ![Worldline dashboard showing three branches and the verified winner](proof/worldline-dashboard.png)
 
 The repository includes a deterministic offline demo and a sanitized evidence
-bundle from a real Solari Sandbox run. Review the live proof without credentials:
+bundle from a real Solari Sandbox run. After installing below, review the live
+proof without credentials:
 
-```powershell
+```bash
 python -m worldline serve --directory proof/live
 ```
 
@@ -33,15 +34,17 @@ checkpoint and verified again before it is considered committed.
 
 ## Run the offline demo
 
-```powershell
-cd use-cases/worldline-py
+```bash
+cd applications/worldline
 python -m venv .venv
-# Windows: .venv\Scripts\Activate.ps1
-# macOS/Linux: source .venv/bin/activate
+source .venv/bin/activate
 python -m pip install .
 python -m worldline demo
 python -m worldline serve
 ```
+
+On Windows PowerShell, replace the activation command with
+`.venv\Scripts\Activate.ps1`; the remaining commands are the same.
 
 The report is written to `artifacts/latest/`. The offline fixture exercises the
 same engine, verifier, report generator, and commit-by-replay path as live mode,
@@ -49,10 +52,10 @@ but uses deterministic local branch results and does not require credentials.
 
 ## Run against live Solari
 
-Copy `.env.example` to `.env`, add your Solari API key, then:
+From `applications/worldline`, copy `.env.example` to `.env`, add your Solari
+API key, then:
 
-```powershell
-cd use-cases/worldline-py
+```bash
 python -m worldline live --surface sandbox
 python -m worldline serve
 ```
@@ -62,9 +65,13 @@ an independent clone for every candidate plus the winner replay. Every resulting
 artifact is read through Solari's filesystem channel and judged outside the
 candidate process.
 
-`--surface auto` is the default. Solari currently reserves desktops for paid
-plans, so a free account transparently falls back to a live sandbox tournament.
-The fallback still uses real microVMs: it checkpoints a prepared base, destroys
+`--surface auto` is the default. Free accounts support one concurrent desktop.
+The September 1 run received `Desktop requires a paid plan`; the maintainer
+later clarified that this was misleading and suggested unavailable desktop host
+capacity as the cause. That cause was not independently confirmed. Auto mode
+retains a narrow fallback for this legacy error and runs a live sandbox tournament;
+other errors still propagate. This is not a statement about desktop entitlement.
+The fallback uses real microVMs: it checkpoints a prepared base, destroys
 that worker, and starts every candidate from a fresh `fromSnapshot` clone.
 Every clone gets independent artifact verification and explicit destruction;
 only the GUI action channel is absent. Use `--surface desktop` to require the
@@ -75,7 +82,7 @@ destroys the desktop in cleanup even when a branch errors.
 
 ## Test
 
-```powershell
+```bash
 python -m unittest discover -s tests -v
 ```
 
@@ -102,5 +109,12 @@ The committed bundle under [`proof/live`](proof/live) records run
 replayed in a fourth clean clone. Its downloaded CSV matches the recorded
 SHA-256 `4ff842448a24d98fcb1cfdc647b05a717a1c75e80066bc5da3ed7eb1c6d42063`.
 Post-run inventory found zero sessions and zero snapshots.
+
+The committed proof stores evidence only. `worldline serve --directory proof/live`
+serves the shared packaged viewer without modifying that evidence. New run exports
+still include the viewer files so they can be served independently.
+
+For the minimal snapshot primitive without the tournament or UI, see
+[`sandbox-snapshot-fork-py`](../../examples/sandbox-snapshot-fork-py).
 
 Worldline was designed, implemented, and iteratively tested with OpenAI Codex.

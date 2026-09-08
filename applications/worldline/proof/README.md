@@ -15,6 +15,11 @@ cookie, or reusable credential is included.
 
 From the use-case directory, inspect the interactive evidence report with:
 
-```powershell
+```bash
 python -m worldline serve --directory proof/live
 ```
+
+The command serves viewer assets from `worldline/static/` and leaves this evidence
+unchanged. The HTML, JavaScript, and CSS are not duplicated in the proof bundle.
+The local `.gitattributes` preserves the CSV bytes on Windows checkouts so their
+recorded digests remain reproducible.

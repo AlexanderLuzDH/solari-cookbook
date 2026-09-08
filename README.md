@@ -7,14 +7,6 @@ Every example in this repo is a complete program you can run in under a minute.
 They are deliberately small: one idea each, no framework, no scaffolding to read
 past. Copy one into your project and change the parts you care about.
 
-## Use cases
-
-Larger end-to-end builds that combine several Solari primitives:
-
-| Use case | Language | What it shows |
-| --- | --- | --- |
-| [worldline-py](use-cases/worldline-py) | Python | Snapshot-branch competing agent plans, verify their artifacts, and replay only the winner |
-
 ## Examples
 
 ### Cloud browser
@@ -37,6 +29,7 @@ Larger end-to-end builds that combine several Solari primitives:
 | [sandbox-quickstart-ts](examples/sandbox-quickstart-ts) | TypeScript | Run a command, write and read files |
 | [sandbox-quickstart-rb](examples/sandbox-quickstart-rb) | Ruby | Same, with no SDK and no gems — stdlib only |
 | [sandbox-code-interpreter-py](examples/sandbox-code-interpreter-py) | Python | Stateful Python kernel for agent loops |
+| [sandbox-snapshot-fork-py](examples/sandbox-snapshot-fork-py) | Python | Seed a snapshot, fork clones, and verify each restored the exact file digest |
 | [sandbox-port-preview-ts](examples/sandbox-port-preview-ts) | TypeScript | Expose a server in the VM on a public URL |
 | [sandbox-scan-untrusted-code-ts](examples/sandbox-scan-untrusted-code-ts) | TypeScript | Run untrusted code and capture what it did (audit hook) |
 

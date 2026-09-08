@@ -47,9 +47,11 @@ one concurrent sandbox or desktop.
 
 The desktop adapter prepares Mousepad with the same ledger, captures a real PNG,
 and performs candidate edits through mouse, clipboard, and keyboard controls.
-The current account cannot execute this path because the live API returns
-`Desktop requires a paid plan`; the adapter remains available behind
-`--surface desktop` and uses the same engine and verifier.
+The September 1 attempt returned `Desktop requires a paid plan`, so this adapter
+has not been live-verified. The maintainer clarified that Free supports one
+concurrent desktop and suggested unavailable host capacity as the cause of the
+misleading error; we have not independently confirmed that diagnosis. The adapter
+remains available behind `--surface desktop` and uses the same engine and verifier.
 
 ## Observed platform behavior
 

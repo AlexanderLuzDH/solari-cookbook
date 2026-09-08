@@ -39,4 +39,4 @@ variable it reads and nothing else.
 
 | Application | Language | What it does |
 | --- | --- | --- |
-| _(none yet)_ | | |
+| [worldline](worldline) | Python | Snapshot-branch competing plans, verify their artifacts, and replay only the winner |

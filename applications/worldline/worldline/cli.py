@@ -5,15 +5,18 @@ from __future__ import annotations
 import argparse
 import asyncio
 import http.server
+import io
 import os
 import socketserver
+from importlib.resources import files
 from pathlib import Path
+from urllib.parse import urlsplit
 
 from .engine import WorldlineEngine
 from .fixture import FixtureRunner
 from .ledger import TASK, TASK_DETAIL, candidates
 from .live import BASE_URL, SolariDesktopRunner
-from .report import write_report
+from .report import STATIC_ASSETS, write_report
 from .sandbox_live import SolariSandboxRunner
 
 DEFAULT_ARTIFACTS = Path(__file__).resolve().parents[1] / "artifacts" / "latest"
@@ -87,12 +90,14 @@ async def run_live(output: Path, *, api_key: str, base_url: str, surface: str) -
                 candidates()
             )
         except Exception as exc:
-            is_plan_gate = (
+            # The gateway historically mislabeled desktop unavailability as a
+            # paid-plan requirement. Keep this narrow legacy fallback.
+            is_legacy_desktop_error = (
                 type(exc).__name__ == "PlanError" and "paid plan" in str(exc).lower()
             )
-            if surface != "auto" or not is_plan_gate:
+            if surface != "auto" or not is_legacy_desktop_error:
                 raise
-            print("desktop : paid plan required; falling back to a live sandbox")
+            print("desktop : unavailable; falling back to a live sandbox")
             sandbox_runner = SolariSandboxRunner(
                 output, api_key=api_key, base_url=base_url
             )
@@ -108,10 +113,25 @@ async def run_live(output: Path, *, api_key: str, base_url: str, surface: str) -
     return 0 if run.status == "committed" and run.cleanup.succeeded else 1
 
 
+class ReportHandler(http.server.SimpleHTTPRequestHandler):
+    """Serve packaged viewer assets over a directory of unchanged run evidence."""
+
+    def send_head(self):
+        name = urlsplit(self.path).path.removeprefix("/") or "index.html"
+        if name in STATIC_ASSETS:
+            data = files("worldline").joinpath("static", name).read_bytes()
+            self.send_response(200)
+            self.send_header("Content-Type", self.guess_type(name))
+            self.send_header("Content-Length", str(len(data)))
+            self.end_headers()
+            return io.BytesIO(data)
+        return super().send_head()
+
+
 def serve(directory: Path, port: int) -> int:
-    if not (directory / "index.html").exists():
+    if not (directory / "run.json").exists():
         raise SystemExit(f"no report found at {directory}; run `worldline demo` first")
-    handler = lambda *args, **kwargs: http.server.SimpleHTTPRequestHandler(
+    handler = lambda *args, **kwargs: ReportHandler(
         *args, directory=str(directory), **kwargs
     )
     with socketserver.TCPServer(("127.0.0.1", port), handler) as server:
