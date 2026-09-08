@@ -5,9 +5,6 @@
  * (sys.addaudithook, built into 3.8+), so every file open, network connection,
  * and subprocess is captured — with no tools to install in the VM. This is the
  * core of a "run it somewhere safe and tell me if it's sketchy" workflow.
- *
- * Built into a full tool (npm/PyPI scanning, AI verdicts, web UI):
- *   https://github.com/Vinay152003/saferun  ·  https://saferun-ten.vercel.app
  */
 import { SolariClient } from "@solarisdk/sdk"
 
@@ -88,12 +85,12 @@ try {
     error: string | null
   }
 
-  const icon: Record<string, string> = { file: "📄", network: "🌐", process: "⚙️" }
-  console.log(`\nwhat the untrusted code did (${trace.events.length} sensitive action(s)):`)
+  console.log(`\nsensitive actions: ${trace.events.length}`)
   for (const e of trace.events) {
-    console.log(`  ${icon[e.category] ?? "•"} ${e.event}  ${e.detail}`)
+    console.log(`  ${e.category.padEnd(7)} ${e.event.padEnd(22)} ${e.detail}`)
   }
-  console.log("\nits own output:", trace.stdout.trim())
+  console.log("\nits own output  :", trace.stdout.trim())
+  if (trace.error) console.log("it also threw   :", trace.error.trim().split("\n").at(-1))
 } finally {
   // kill() destroys the VM. close() alone would leave it running until the idle timeout.
   await sandbox.kill()
