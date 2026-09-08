@@ -46,6 +46,11 @@ One key spans all three, so an example can use more than one at once.
 | --- | --- | --- |
 | [desktop-computer-use-py](examples/desktop-computer-use-py) | Python | Screenshot, click, and type on a Linux GUI |
 
+## Applications
+
+Bigger programs built on Solari — a CLI or a UI, its own modules, solving a whole
+problem rather than showing one call. See [applications/](applications).
+
 ## Running an example
 
 Each directory is self-contained.
