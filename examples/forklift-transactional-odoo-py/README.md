@@ -1,5 +1,13 @@
 # Forklift: transactional computer use for Odoo
 
+**Looking for the small cookbook example?** The revised
+[snapshot → audit → promote example](https://github.com/AlexanderLuzDH/solari-cookbook/tree/forklift-snapshot-gate/examples/sandbox-audit-promote-py)
+is three files and uses public SDK methods. Its submitted source passed a fresh
+live run, including template boot and cleanup, in 68 seconds.
+[Replacement PR #58](https://github.com/solari-sdk/solari-cookbook/pull/58)
+contains the run receipt. The full Odoo project and its historical evidence
+remain below.
+
 > **An agent's “done” is a proposal, not a commit.** Forklift performs visible
 > Odoo work on disposable state, freezes the result, and promotes only the exact
 > snapshot whose database passes a separate read-only audit.
