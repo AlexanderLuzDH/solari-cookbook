@@ -27,6 +27,11 @@ async def main(task: str) -> None:
             print(f"delivered: title={title!r}, h1={heading!r}; screenshot saved")
             # A missing /pricing can render the homepage without goto raising.
             # Check the task's expected result, not just navigation or artifacts.
+            #
+            # example.com happens to answer 404 here, so the status gives it away
+            # too. Plenty of sites return 200 on a missing page — a soft 404, an
+            # SPA that renders its shell, a login wall wearing the site's chrome.
+            # The content check is the one that survives all three.
             if (title.strip(), heading.strip()) != (expected, expected):
                 raise AssertionError(f"wrong page: expected title and h1 {expected!r}")
             print("PASS: delivered page matches the task")
