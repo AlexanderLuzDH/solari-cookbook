@@ -22,6 +22,18 @@ const browser = await solari.launch({
   stealth: true,
   proxy: "us",
   // captcha: true,   // managed reCAPTCHA / hCaptcha / Turnstile solving
+
+  // Sticky egress — pin one IP for a whole multi-step flow:
+  //
+  //   proxy: { country: "us", session: "checkout-42", sessionDuration: 15 }
+  //
+  // Residential egress rotates by default, so a login on one IP and the next
+  // page on another looks like a session hijack to anything watching, and you
+  // get challenged mid-flow. `session` is any id up to 32 characters and
+  // `sessionDuration` is minutes, 1 to 30, default 10 — set it longer than the
+  // flow takes, because the pin lapses on the clock, not on completion.
+  // Reuse the same id on a later run and you land on the same IP again while
+  // it lasts. (Recipe from @EzraStone.)
 })
 try {
   const page = await browser.newPage()
