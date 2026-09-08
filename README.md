@@ -25,6 +25,7 @@ past. Copy one into your project and change the parts you care about.
 | Example | Language | What it shows |
 | --- | --- | --- |
 | [sandbox-quickstart-ts](examples/sandbox-quickstart-ts) | TypeScript | Run a command, write and read files |
+| [sandbox-quickstart-rb](examples/sandbox-quickstart-rb) | Ruby | Same, with no SDK and no gems — stdlib only |
 | [sandbox-code-interpreter-py](examples/sandbox-code-interpreter-py) | Python | Stateful Python kernel for agent loops |
 | [sandbox-port-preview-ts](examples/sandbox-port-preview-ts) | TypeScript | Expose a server in the VM on a public URL |
 
@@ -64,9 +65,18 @@ product bills to the same balance.
 
 Things that cost you an afternoon if you meet them cold:
 
-- **TypeScript: call `await solari.close()`.** The browser client keeps a
-  loopback proxy open for connection retries. Skip the close and your script
-  prints its output and then hangs forever instead of exiting.
+- **TypeScript: `browser.close()` is enough to exit (as of `@solarisdk/browser`
+  0.1.3).** The client keeps a loopback proxy open for connection retries; before
+  0.1.3 that listener held Node's event loop open, so you had to
+  `await solari.close()` or the script printed its output and then hung forever.
+  0.1.3 unrefs the listener — `browser.close()` alone now exits. Calling
+  `solari.close()` is still fine and releases the client's pool immediately.
+- **A profile does not seed the browser on its own.** `launch({ profileId })` puts the
+  stored state on `session.storageState` and stops there. Pass it to
+  `newContext({ storageState })` or every run starts anonymous while looking logged in.
+  `addCookies()` is not a substitute: it restores the cookies and drops localStorage.
+  Building your own context also drops the pool's timezone pin, so a profile +
+  proxy flow must pass `timezoneId: browser.proxy?.timezoneId` through as well.
 - **Recording is per session, not per account.** Pass `recording: true` when you
   create the session; without it the replay endpoint 404s forever. The upload is
   async after release, so poll for ~30s before giving up.
