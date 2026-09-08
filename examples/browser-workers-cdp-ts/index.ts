@@ -98,26 +98,18 @@ async function createSession(apiKey: string): Promise<Session> {
     )
   }
 
+  // `POST /sessions` always returns all three of these. Worth knowing because
+  // the SDKs look more defensive than this — they derive the CDP endpoint from
+  // the WebSocket one when it is missing. That is for `GET /sessions/:id`,
+  // which omits both endpoints once a session is no longer live. On create
+  // they are guaranteed, so read them straight.
   const body = (await response.json()) as {
-    sessionId?: string
-    id?: string
+    sessionId: string
     wsEndpoint: string
-    cdpEndpoint?: string
+    cdpEndpoint: string
   }
 
-  // Two defensive reads, both earned. The identifier is `sessionId` on the
-  // wire but `id` on the SDKs' own `Session` type. And `cdpEndpoint` is
-  // optional — when the gateway omits it, the SDKs derive it from the
-  // WebSocket endpoint by swapping the path segment, so do the same.
-  const sessionId = body.sessionId ?? body.id
-  if (!sessionId || !body.wsEndpoint) {
-    throw new Error("create session returned no session id or wsEndpoint")
-  }
-
-  return {
-    sessionId,
-    cdpEndpoint: body.cdpEndpoint ?? body.wsEndpoint.replace("/ws/", "/cdp/"),
-  }
+  return { sessionId: body.sessionId, cdpEndpoint: body.cdpEndpoint }
 }
 
 async function releaseSession(apiKey: string, sessionId: string) {
@@ -163,7 +155,13 @@ async function connect(endpoint: string): Promise<Cdp> {
     number,
     { resolve: (value: any) => void; reject: (error: Error) => void }
   >()
-  const waiting = new Map<string, (params: Record<string, unknown>) => void>()
+  const waiting = new Map<
+    string,
+    {
+      resolve: (params: Record<string, unknown>) => void
+      reject: (error: Error) => void
+    }
+  >()
 
   socket.addEventListener("message", (event) => {
     if (typeof event.data !== "string") return
@@ -182,13 +180,20 @@ async function connect(endpoint: string): Promise<Cdp> {
     }
 
     if (typeof message.method === "string") {
-      waiting.get(message.method)?.(message.params ?? {})
+      waiting.get(message.method)?.resolve(message.params ?? {})
     }
   })
 
   const fail = (reason: string) => {
     for (const [, waiter] of pending) waiter.reject(new Error(reason))
     pending.clear()
+    // Event waiters have to go too. Reject only the command replies and a
+    // half-finished flow — say `Page.navigate` throwing after something is
+    // already waiting on `Page.loadEventFired` — leaves that waiter armed with
+    // a live 30s timer. It then rejects long after the request is gone, with
+    // nobody listening, which surfaces as an unhandled rejection.
+    for (const [, waiter] of waiting) waiter.reject(new Error(reason))
+    waiting.clear()
   }
   socket.addEventListener("close", () => fail("CDP socket closed"))
   socket.addEventListener("error", () => fail("CDP socket errored"))
@@ -223,6 +228,9 @@ async function connect(endpoint: string): Promise<Cdp> {
       })
     },
 
+    // Matches on method name alone, which is right for one page on one socket.
+    // Attach to a second tab and both tabs' events arrive here under the same
+    // method name — filter on the frame's `sessionId` before you do that.
     once(method) {
       return new Promise((resolve, reject) => {
         const timer = setTimeout(() => {
@@ -230,10 +238,17 @@ async function connect(endpoint: string): Promise<Cdp> {
           reject(new Error(`timed out waiting for ${method}`))
         }, 30_000)
 
-        waiting.set(method, (params) => {
-          clearTimeout(timer)
-          waiting.delete(method)
-          resolve(params)
+        waiting.set(method, {
+          resolve: (params) => {
+            clearTimeout(timer)
+            waiting.delete(method)
+            resolve(params)
+          },
+          reject: (error) => {
+            clearTimeout(timer)
+            waiting.delete(method)
+            reject(error)
+          },
         })
       })
     },
