@@ -17,6 +17,7 @@ past. Copy one into your project and change the parts you care about.
 | [browser-quickstart-py](examples/browser-quickstart-py) | Python | Launch a browser, open a page, read it |
 | [browser-stealth-proxy-ts](examples/browser-stealth-proxy-ts) | TypeScript | Stealth mode + residential proxy egress |
 | [browser-profiles-ts](examples/browser-profiles-ts) | TypeScript | Log in once, reuse the session forever |
+| [browser-login-handoff-ts](examples/browser-login-handoff-ts) | TypeScript | Hand the live session to a human to sign in, then save it |
 | [browser-session-recording-py](examples/browser-session-recording-py) | Python | Record a session, download the replay |
 | [browser-page-assertions-py](examples/browser-page-assertions-py) | Python | Reject a wrong page even when navigation and screenshots succeed |
 | [browser-workers-cdp-ts](examples/browser-workers-cdp-ts) | TypeScript | Drive a browser from a Cloudflare Worker, over raw CDP |
@@ -30,6 +31,7 @@ past. Copy one into your project and change the parts you care about.
 | [sandbox-quickstart-ts](examples/sandbox-quickstart-ts) | TypeScript | Run a command, write and read files |
 | [sandbox-quickstart-rb](examples/sandbox-quickstart-rb) | Ruby | Same, with no SDK and no gems — stdlib only |
 | [sandbox-code-interpreter-py](examples/sandbox-code-interpreter-py) | Python | Stateful Python kernel for agent loops |
+| [sandbox-snapshot-fork-py](examples/sandbox-snapshot-fork-py) | Python | Seed a snapshot, fork clones, and verify each restored the exact file digest |
 | [sandbox-port-preview-ts](examples/sandbox-port-preview-ts) | TypeScript | Expose a server in the VM on a public URL |
 | [sandbox-scan-untrusted-code-ts](examples/sandbox-scan-untrusted-code-ts) | TypeScript | Run untrusted code and capture what it did (audit hook) |
 
