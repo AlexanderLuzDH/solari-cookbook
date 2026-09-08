@@ -26,7 +26,13 @@ const solari = new Solari({ apiKey: process.env.SOLARI_API_KEY! })
 const browser = await solari.launch(country ? { stealth: true, proxy: { country } } : {})
 
 try {
-  const context = browser.contexts()[0]!
+  // The pool only materialises a context up front when you ask for a proxy —
+  // an unproxied session connects with `contexts()` empty, so indexing into it
+  // and calling newPage() on the result throws. Costs nothing to make our own:
+  // the timezone pin the pool's context carries only matters when there is a
+  // proxy to match, and the stealth shim is registered on whatever context
+  // exists.
+  const context = browser.contexts()[0] ?? (await browser.newContext())
   const page = await context.newPage()
 
   // CDP rather than `page.on("request")`. Playwright's event gives you the URL;

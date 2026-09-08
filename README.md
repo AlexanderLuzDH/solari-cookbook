@@ -93,6 +93,11 @@ Things that cost you an afternoon if you meet them cold:
   Deploy and friends are out. Skip it: every session exposes a CDP endpoint,
   and any runtime that can hold an outbound WebSocket can drive the browser
   directly. See [browser-workers-cdp-ts](examples/browser-workers-cdp-ts).
+- **`contexts()` is empty unless you asked for a proxy.** The pool only creates
+  a context up front when a session requests one, so `browser.contexts()[0]` is
+  `undefined` on a plain `launch()` and a non-null assertion on it will throw at
+  `newPage()`. Fall back to `newContext()`. A context you make yourself also
+  skips the pool's timezone pin, which matters only when a proxy is attached.
 - **Recording is per session, not per account.** Pass `recording: true` when you
   create the session; without it the replay endpoint 404s forever. The upload is
   async after release, so poll for ~30s before giving up.
