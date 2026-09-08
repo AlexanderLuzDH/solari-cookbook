@@ -13,7 +13,7 @@ Three things that bite, each commented at the line where it happens:
 ## Run
 
 ```bash
-cd examples/sentinel
+cd examples/security-posture-review-ts
 npm install
 export SOLARI_API_KEY=slr_live_...   # https://console.getsolari.com
 npm start -- vercel.com

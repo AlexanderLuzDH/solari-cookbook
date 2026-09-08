@@ -21,10 +21,19 @@ if (!domain || !/^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)
   throw new Error("usage: npm start -- <domain>")
 }
 
-const apiKey = process.env.SOLARI_API_KEY
-if (!apiKey) throw new Error("SOLARI_API_KEY is not set")
+// Read through a helper so `apiKey` is `string`, not `string | undefined`. A
+// bare `if (!apiKey) throw` narrows only at module scope: the hoisted function
+// declarations below could in principle run before that check, so TypeScript
+// refuses to carry the narrowing into them.
+function requireEnv(name: string): string {
+  const value = process.env[name]
+  if (!value) throw new Error(`${name} is not set`)
+  return value
+}
 
-const userAgent = "SentinelExampleBot/0.1 (passive posture review; public data only)"
+const apiKey = requireEnv("SOLARI_API_KEY")
+
+const userAgent = "PostureReviewBot/0.1 (passive posture review; public data only)"
 
 const TRACKED_HEADERS = [
   "strict-transport-security", "content-security-policy", "x-frame-options",
@@ -40,7 +49,15 @@ async function readTrustPage() {
   const browser = await solari.launch({ stealth: true, captcha: true })
   try {
     const page = await browser.newPage()
-    await page.setExtraHTTPHeaders({ "user-agent": userAgent })
+    // No user-agent override here, deliberately. Under `stealth: true` the pool
+    // presents full headed Chromium, whose wire User-Agent, Sec-CH-UA brand list
+    // and header order already match real Chrome exactly. Setting a custom UA as
+    // an extra HTTP header changes only the wire header: `navigator.userAgent`
+    // and Sec-CH-UA still say Chrome, so the request announces a bot while the
+    // browser claims to be a person. That contradiction is far easier to spot
+    // than either choice made cleanly, and it wastes the stealth and captcha
+    // this session is paying for. The honest bot UA goes on the sandbox leg
+    // below, where there is no stealth for it to contradict.
     const url = `https://${domain}/security`
     const response = await page.goto(url, { waitUntil: "domcontentloaded", timeout: 20_000 })
 
@@ -87,7 +104,7 @@ async function readSecurityHeaders() {
     // is what gets redirection, and it keeps the domain an argument rather than
     // pasting it into the script text.
     const curl = 'curl -sS -o /dev/null -D - -L --max-redirs 3 --max-time 15 -A "$2" "https://$1/"'
-    const out = await sbx.commands.run("sh", { args: ["-c", curl, "sentinel", domain, userAgent] })
+    const out = await sbx.commands.run("sh", { args: ["-c", curl, "posture-review", domain, userAgent] })
     return parseHeaders(out.stdout)
   } finally {
     // kill() destroys the VM. close() alone would drop only the local control
@@ -146,4 +163,7 @@ async function main() {
   console.log(JSON.stringify(report, null, 2))
 }
 
-main()
+main().catch((err) => {
+  console.error(err instanceof Error ? err.message : String(err))
+  process.exitCode = 1
+})

@@ -1,5 +1,5 @@
 {
-  "name": "solari-sentinel",
+  "name": "solari-security-posture-review-ts",
   "private": true,
   "type": "module",
   "scripts": {
