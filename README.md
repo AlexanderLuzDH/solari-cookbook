@@ -25,8 +25,18 @@ past. Copy one into your project and change the parts you care about.
 | Example | Language | What it shows |
 | --- | --- | --- |
 | [sandbox-quickstart-ts](examples/sandbox-quickstart-ts) | TypeScript | Run a command, write and read files |
+| [sandbox-quickstart-rb](examples/sandbox-quickstart-rb) | Ruby | Same, with no SDK and no gems — stdlib only |
 | [sandbox-code-interpreter-py](examples/sandbox-code-interpreter-py) | Python | Stateful Python kernel for agent loops |
 | [sandbox-port-preview-ts](examples/sandbox-port-preview-ts) | TypeScript | Expose a server in the VM on a public URL |
+
+### Multi-product
+
+One key spans all three, so an example can use more than one at once.
+
+| Example | Language | What it shows |
+| --- | --- | --- |
+| [form-delivery-check-ts](examples/form-delivery-check-ts) | TypeScript | Submit a form in a browser, verify the lead landed in a sandbox |
+| [security-posture-review-ts](examples/security-posture-review-ts) | TypeScript | Browser and sandbox running concurrently on one key |
 
 ### Desktop
 
@@ -70,6 +80,12 @@ Things that cost you an afternoon if you meet them cold:
   `await solari.close()` or the script printed its output and then hung forever.
   0.1.3 unrefs the listener — `browser.close()` alone now exits. Calling
   `solari.close()` is still fine and releases the client's pool immediately.
+- **A profile does not seed the browser on its own.** `launch({ profileId })` puts the
+  stored state on `session.storageState` and stops there. Pass it to
+  `newContext({ storageState })` or every run starts anonymous while looking logged in.
+  `addCookies()` is not a substitute: it restores the cookies and drops localStorage.
+  Building your own context also drops the pool's timezone pin, so a profile +
+  proxy flow must pass `timezoneId: browser.proxy?.timezoneId` through as well.
 - **The TypeScript SDK cannot run on an edge runtime.** It bundles a
   Playwright fork that wants Node and raw TCP sockets, so Workers, Deno
   Deploy and friends are out. Skip it: every session exposes a CDP endpoint,
