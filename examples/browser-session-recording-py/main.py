@@ -59,7 +59,7 @@ async def main() -> None:
     # upload had not appeared inside the window above, which is a different
     # problem with a different fix.
     print(f"no replay after ~{POLL_ATTEMPTS * POLL_INTERVAL_S}s.")
-    print("recording=True was set at launch, so this is not a missing recording.")
+    print("This script sets recording=True at launch, so the recording is not missing.")
     print(f"Retry the download later for session {session_id}.")
 
 
