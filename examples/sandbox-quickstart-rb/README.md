@@ -8,6 +8,9 @@ Commands are not shell-interpreted — argv goes in `args`. For pipes or redirec
 
 ## Run
 
+Needs Ruby 3.0 or newer — `sh` is defined as an endless method, which older
+rubies reject at parse time.
+
 ```bash
 cd examples/sandbox-quickstart-rb
 export SOLARI_API_KEY=slr_live_...   # https://console.getsolari.com
