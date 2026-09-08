@@ -24,8 +24,21 @@ try {
   // seed the browser, so the state has to go to the context you create. A page
   // from `browser.newPage()` starts anonymous and the counter below never
   // leaves 1, however many times you run this.
+  //
+  // The cast bridges a type gap, not a shape gap: the value is already what
+  // Playwright wants, but the SDK types every StorageState field as optional.
+  // Drop it once @solarisdk/browser tightens that type.
+  const storageState = browser.session.storageState as
+    | NonNullable<Parameters<typeof browser.newContext>[0]>["storageState"]
+    | undefined
+
   const context = await browser.newContext({
-    storageState: browser.session.storageState ?? undefined,
+    storageState,
+    // A context you build yourself does not inherit the pool's timezone pin —
+    // that lives on the context the pool creates when you request a proxy. Pass
+    // it through, or Intl and Date disagree with your egress IP. Undefined when
+    // no proxy was requested, which is what you want.
+    timezoneId: browser.proxy?.timezoneId,
   })
   const page = await context.newPage()
 

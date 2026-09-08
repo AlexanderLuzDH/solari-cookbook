@@ -6,6 +6,8 @@ Run it twice: the visit counter survives because the profile is saved between ru
 
 Two halves are easy to miss, and each one on its own leaves you with a counter stuck at 1. Attaching a profile does not auto-save it, so you must call `profiles.save()`. And attaching a profile does not seed the browser either, so `session.storageState` has to reach `newContext({ storageState })`.
 
+Building the context yourself has one knock-on effect: it no longer inherits the timezone the pool pins when you request a proxy. If you combine a profile with a managed proxy, pass `timezoneId: browser.proxy?.timezoneId` alongside the state.
+
 ## Run
 
 ```bash
